@@ -15,18 +15,23 @@ flow-distillation/
 │   ├── sampling.py             Euler sampling loop (steps = denoising steps)
 │   ├── naive.py                naive distillation: match the teacher's FULL
 │   │                           trajectory (e.g. 100 steps) in one leap
-│   └── progressive.py          progressive distillation (Salimans & Ho 2022):
-│                               repeatedly halve steps, 64 -> 32 -> ... -> 1
+│   ├── progressive.py          progressive distillation (Salimans & Ho 2022):
+│   │                           repeatedly halve steps, 64 -> 32 -> ... -> 1
+│   └── consistency.py          consistency distillation (Song et al. 2023):
+│                               same weights, dial quality via 1-N sampling calls
 ├── scripts/                    things you actually run
 │   ├── train_teacher.py        trains teacher, saves checkpoints/teacher.pth
 │   ├── eval_teacher.py         plots the ring + the step-degradation sweep
 │   ├── naive_distill.py        runs naive.py, saves checkpoints/student.pth
-│   └── progressive_distill.py  runs progressive.py, saves every halving round
-│                               + plots/progressive.png
+│   ├── progressive_distill.py  runs progressive.py, saves every halving round
+│   │                           + plots/progressive.png
+│   └── consistency_distill.py  runs consistency.py, saves checkpoints/consistency.pth
+│                               + plots/consistency.png (quality vs. sampling calls)
 ├── checkpoints/                saved model weights (.pth)
 │   ├── teacher.pth             the 100-step teacher
 │   ├── student.pth             naive one-leap 1-step student
-│   └── progressive_1step.pth   progressively-distilled 1-step student
+│   ├── progressive_1step.pth   progressively-distilled 1-step student
+│   └── consistency.pth         consistency-distilled student (any # of calls)
 └── plots/                      saved figures
 ```
 
@@ -36,14 +41,14 @@ Teacher and student are the SAME class (`VelocityNet`). What differs is:
 
 - **which weights** each holds  -> different files in `checkpoints/`
 - **how each is trained**       -> `training.py` (teacher) vs `naive.py` /
-  `progressive.py` (student, two different distillation strategies)
+  `progressive.py` / `consistency.py` (student, three distillation strategies)
 
 So the code is split by ROLE (data / model / train / sample / distill),
 and the teacher/student distinction lives in checkpoints and scripts.
 
-## Naive vs progressive distillation
+## Three distillation strategies
 
-Both turn the 100-step teacher into a 1-step student, but differently:
+All three turn the 100-step teacher into a fast student, differently:
 
 - **`naive.py`** — one giant leap. The student is asked to reproduce the
   teacher's *entire* rollout endpoint from a single call. Cheap to write,
@@ -54,6 +59,12 @@ Both turn the 100-step teacher into a 1-step student, but differently:
   to compress 2 teacher steps into 1 (64->32->...->1), warm-started from
   the previous round's weights. Only 2 teacher calls per training example,
   and each round is a much gentler extrapolation than the naive approach.
+- **`consistency.py`** — self-consistency, not endpoint-matching. Every
+  point on a path is trained to agree with its neighbour on where the path
+  ends, anchored by a boundary condition (`f(x, t=1) = x`) and an EMA
+  target network (guardrails against the classic "everyone agrees on
+  garbage" collapse). One model, and you can dial quality up by spending
+  more sampling calls at inference time — no retraining needed.
 
 ## Run
 
@@ -65,6 +76,8 @@ python -m scripts.eval_teacher         # saves plots: clean ring + step sweep
 python -m scripts.naive_distill        # one-leap distillation -> checkpoints/student.pth
 python -m scripts.progressive_distill  # halving distillation -> checkpoints/progressive_1step.pth
                                         # + plots/progressive.png (quality at every step count)
+python -m scripts.consistency_distill  # self-consistency distillation -> checkpoints/consistency.pth
+                                        # + plots/consistency.png (quality vs. sampling calls)
 ```
 
 ## Rules learned the hard way
