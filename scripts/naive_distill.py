@@ -2,7 +2,7 @@
 Distill the trained teacher into a one-step student and save its weights.
 
 Run from the project root:
-    python -m scripts.distill_student
+    python -m scripts.naive_distill
 
 Requires: checkpoints/teacher.pth (run train_teacher.py first)
 Produces: checkpoints/student.pth
