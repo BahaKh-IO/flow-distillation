@@ -13,14 +13,14 @@ flow-distillation/
 │   ├── model.py                VelocityNet — the vector field u_theta(x, t)
 │   ├── training.py             flow matching training (how the teacher is made)
 │   ├── sampling.py             Euler sampling loop (steps = denoising steps)
-│   ├── distill.py              naive distillation: match the teacher's FULL
+│   ├── naive.py                naive distillation: match the teacher's FULL
 │   │                           trajectory (e.g. 100 steps) in one leap
 │   └── progressive.py          progressive distillation (Salimans & Ho 2022):
 │                               repeatedly halve steps, 64 -> 32 -> ... -> 1
 ├── scripts/                    things you actually run
 │   ├── train_teacher.py        trains teacher, saves checkpoints/teacher.pth
 │   ├── eval_teacher.py         plots the ring + the step-degradation sweep
-│   ├── naive_distill.py        runs distill.py, saves checkpoints/student.pth
+│   ├── naive_distill.py        runs naive.py, saves checkpoints/student.pth
 │   └── progressive_distill.py  runs progressive.py, saves every halving round
 │                               + plots/progressive.png
 ├── checkpoints/                saved model weights (.pth)
@@ -35,7 +35,7 @@ flow-distillation/
 Teacher and student are the SAME class (`VelocityNet`). What differs is:
 
 - **which weights** each holds  -> different files in `checkpoints/`
-- **how each is trained**       -> `training.py` (teacher) vs `distill.py` /
+- **how each is trained**       -> `training.py` (teacher) vs `naive.py` /
   `progressive.py` (student, two different distillation strategies)
 
 So the code is split by ROLE (data / model / train / sample / distill),
@@ -45,7 +45,7 @@ and the teacher/student distinction lives in checkpoints and scripts.
 
 Both turn the 100-step teacher into a 1-step student, but differently:
 
-- **`distill.py`** — one giant leap. The student is asked to reproduce the
+- **`naive.py`** — one giant leap. The student is asked to reproduce the
   teacher's *entire* rollout endpoint from a single call. Cheap to write,
   expensive to run (100 teacher calls per training example) and a hard
   regression target, since the student must correct for the whole

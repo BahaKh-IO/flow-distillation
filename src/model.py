@@ -9,7 +9,7 @@ In lecture notation this network IS u_theta_t(x): the vector field.
 IMPORTANT: teacher and student are BOTH instances of this same class.
 What makes one a "teacher" and another a "student" is only:
   - which weights it holds (checkpoints/teacher.pth vs checkpoints/student.pth)
-  - how it was trained (training.py vs distill.py)
+  - how it was trained (training.py vs naive.py / progressive.py)
 """
 
 import torch

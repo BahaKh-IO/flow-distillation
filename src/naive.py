@@ -1,5 +1,5 @@
 """
-distill.py — teaching a student to make the ring in ONE leap.
+naive.py — teaching a student to make the ring in ONE leap.
 
 Method: direct trajectory distillation (the simplest form).
   1. z0 ~ N(0, I)              a random start

@@ -10,7 +10,7 @@ Produces: checkpoints/student.pth
 
 import torch
 
-from src.distill import distill_one_step
+from src.naive import distill_one_step
 from src.model import VelocityNet
 
 TEACHER_CHECKPOINT = "checkpoints/teacher.pth"
