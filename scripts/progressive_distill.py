@@ -7,15 +7,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import torch
 
-from src.data import sample_data
+from src.data import radius_err, sample_data
 from src.model import VelocityNet
 from src.progressive import progressive_distill
 from src.sampling import generate
-
-
-def radius_err(x):
-    r = torch.sqrt((x ** 2).sum(dim=1))
-    return (r - 2.0).abs().mean().item()
 
 
 def main():

@@ -40,3 +40,12 @@ def sample_moons(n: int) -> torch.Tensor:
 
 # The shape used by default everywhere. Swap this one line to change dataset.
 sample_data = sample_ring
+
+
+def radius_err(x: torch.Tensor) -> float:
+    """Mean |distance from origin - 2.0|, i.e. how far off the true ring.
+
+    Assumes sample_ring's radius (2.0); lower is better, 0 is perfect.
+    """
+    r = torch.sqrt((x ** 2).sum(dim=1))
+    return (r - 2.0).abs().mean().item()

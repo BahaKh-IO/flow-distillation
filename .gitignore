@@ -2,3 +2,9 @@ __pycache__/
 *.pyc
 checkpoints/*.pth
 plots/*.png
+
+# README figures: committed so they render on GitHub
+!plots/teacher_step_sweep.png
+!plots/naive_distill_result.png
+!plots/progressive.png
+!plots/consistency.png

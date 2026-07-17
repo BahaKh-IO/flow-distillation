@@ -8,16 +8,11 @@ import matplotlib.pyplot as plt
 import torch
 
 from src.consistency import consistency_distill, generate_consistency
-from src.data import sample_data
+from src.data import radius_err, sample_data
 from src.model import VelocityNet
 
 TEACHER = "checkpoints/teacher.pth"
 STUDENT = "checkpoints/consistency.pth"
-
-
-def radius_err(x):
-    r = torch.sqrt((x ** 2).sum(dim=1))
-    return (r - 2.0).abs().mean().item()
 
 
 def main():
